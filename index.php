@@ -1,5 +1,9 @@
 <?php
 
+function dd($var){
+    echo "<pre>";
+    var_dump($var);die;
+}
 class Gamers
 {
     public $gamersCount = 0;
@@ -43,15 +47,11 @@ class Gamers
             }
         }
         $table = $this->table;
-        $this->resolve($table, 0, 0);
+        $this->resolve($table, 0, 0, 0);
     }
 
-    public function resolve($table, $tourIndex, $gameIndex)
+    public function resolve($table, $tourIndex, $gameIndex, $variantIndex)
     {
-
-
-
-
         /*
         1. select tour/game cell
         2. select first game
@@ -63,43 +63,55 @@ class Gamers
         5. stop if last cell has one element.
         */
 
+        if($variantIndex >= $this->couples){
+            echo 'ERROR variant index out of array' . $firstSelectedIndex . ' ' . $secondSelectedIndex . ' ' . $variantIndex;
+            return false;
+        }
         // select first game from variants
-        $firstSelectedIndex = array_values($table[$tourIndex][$gameIndex])[0]['first'];
-        $secondSelectedIndex = array_values($table[$tourIndex][$gameIndex])[0]['second'];
+
+        $oldTable = $table;
+
+        $firstSelectedIndex = array_values($table[$tourIndex][$gameIndex])[$variantIndex]['first'];
+        $secondSelectedIndex = array_values($table[$tourIndex][$gameIndex])[$variantIndex]['second'];
+
         $table[$tourIndex][$gameIndex] = [
             'first' => $firstSelectedIndex,
             'second' => $secondSelectedIndex
         ];
 
         // putGameInTable (remove this first game from all table)
+        $clearedTable = $this->putGameInTable($table, $tourIndex, $gameIndex, $firstSelectedIndex, $secondSelectedIndex, $variantIndex);
 
-        $this->putGameInTable($table, $tourIndex, $gameIndex, $firstSelectedIndex, $secondSelectedIndex);
-
-        for($tour = 0; $tour < count($table); $tour++){
-            for($game = 0; $game < count($table[0]); $game++){
-                if(count($table[$tour][$game]) == 1){ //only one possible game in cell
+        for($tour = 0; $tour < count($clearedTable); $tour++){
+            for($game = 0; $game < count($clearedTable[0]); $game++){
+                if(count($clearedTable[$tour][$game]) == 1){ //only one possible game in cell
                     continue;
                 }
-                if(count($table[$tour][$game]) == 0){ // no game to play in this cell - error
-                    echo 'ERROR ' . $firstSelectedIndex . ' ' . $secondSelectedIndex;
+                if(count($clearedTable[$tour][$game]) == 0){ // no game to play in this cell - error
+
+                    echo sprintf('ERR: firstSelectedIndex: %s, secondSelectedIndex: %s, variantIndex: %s, tour: %s, game: %s',
+                         $firstSelectedIndex,
+                         $secondSelectedIndex,
+                         $variantIndex,
+                         $tour,
+                         $game
+                    ). PHP_EOL;
                     return false;
-                    // return [
-                    //     'first' => $firstSelectedIndex,
-                    //     'second' => $secondSelectedIndex
-                    // ];
                 }
             }
         }
+        $variantIndex = 0;
         $next = $this->next($tourIndex, $gameIndex);
         if(!$next){
-            $this->finalTable = $table;
+            $this->finalTable = $clearedTable;
             return true;//finish recursion
         }
-        $newTable = $table;
-        if($this->resolve($newTable, $next[0], $next[1]) === false){
-            $newNext = $this->next($next[0], $next[1]);
-            $newTable = $table;
-            $this->resolve($newTable, $newNext[0], $newNext[1]);
+        if($this->resolve($clearedTable, $next[0], $next[1], $variantIndex) === false){
+            if($variantIndex == 1 ){
+                dd($clearedTable);
+            }
+            ++$variantIndex;
+            $this->resolve($clearedTable, $next[0], $next[1], $variantIndex);
         }
 
 
@@ -136,14 +148,15 @@ class Gamers
             ];
         }
     }
-    public function putGameInTable(&$table, $tourIndex, $gameIndex, $first, $second)
+    public function putGameInTable($table, $tourIndex, $gameIndex, $first, $second, $variantIndex)
     {
 
         $gamersInTour = [];
         for($game = 0; $game <= $gameIndex; $game++){//remove variants in tour
-            $gamersInTour[] = $table[$tourIndex][$game]['first'];
-            $gamersInTour[] = $table[$tourIndex][$game]['second'];
+                $gamersInTour[] = $table[$tourIndex][$game]['first'];
+                $gamersInTour[] = $table[$tourIndex][$game]['second'];
         }
+
 
         //remove per tour variants
         for($tour = 0; $tour < count($table); $tour++){
@@ -180,6 +193,7 @@ class Gamers
                 }
             }
         }
+        return $table;
     }
     public function placeGame($first, $second)
     {
@@ -213,7 +227,7 @@ class Gamers
     }
 }
 
-$game = new Gamers(6);
+$game = new Gamers(5);
 echo "<pre>";
 for($tour = 0; $tour < count($game->finalTable); $tour++) {
     for ($gameIndex = 0; $gameIndex < count($game->finalTable[0]); $gameIndex++) {
