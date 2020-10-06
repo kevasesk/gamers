@@ -22,9 +22,6 @@ class Gamers {
             }
         }
         $this->tourCount = ceil(count($this->games) / $this->couples);
-
-            //TODO
-
         $variants = $this->games;
         foreach ($variants as &$var) {
             unset($var['used']);
@@ -43,9 +40,56 @@ class Gamers {
 
             }
         }
-
+        $this->resolve();
     }
 
+    public function resolve($tourIndex, $gameIndex)
+    {
+        /*
+
+        1. select tour/game cell
+        2. select first game
+        3. putGameInTable (remove this first game from all table)
+        4. check if all cells have at least one game
+            4.1 if stoped -> select next variant from cell
+                4.1.1 if no variant from cell cant be placed -> return
+            4.2 if not stoped -> select ANOTHER NEXT CELL --> recursion: (1)
+        5. stop if last cell has one element.
+
+
+
+        */
+        $this->table[$tourIndex][$gameIndex] = [
+            'first' => $this->table[$tourIndex][$gameIndex][0]['first'],
+            'second' => $this->table[$tourIndex][$gameIndex][0]['second']
+        ];
+        $this->putGameInTable($firstindex, $secondIndex);
+
+        for($tour = 0; $tour < count($this->table); $tour++){
+            for($game = 0; $game < count($this->table[0]); $game++){
+                if(count($this->table[$tour][$games]) == 1){ //only one possible game in cell
+                    continue;
+                }
+                if(count($this->table[$tour][$games]) == 0){ // no game to play in this cell - error
+                    return false;
+                }
+            }
+        }
+        $this->resolve($tourIndex, ++$gameIndex);
+
+    }
+    function putGameInTable($first, $second)
+    {
+        for($tour = 0; $tour < count($this->table); $tour++){
+            for($game = 0; $game < count($this->table[0]); $game++){
+                foreach($this->table[$tour][$games] as &$gameVariant){
+                    if($gameVariant['first'] == $first && $gameVariant['second'] == $second){
+                        unset($gameVariant);
+                    }
+                }
+            }
+        }
+    }
     function placeGame($first, $second)
     {
         if($first == $second){
