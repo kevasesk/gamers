@@ -1,0 +1,99 @@
+<html>
+<head>
+    <meta charset="UTF-8" />
+</head>
+<body>
+<textarea placeholder="Введи участников, каждый новый с новой строки" id="dataField" rows="10"></textarea><br/>
+<button type="button" id="go" onclick="Root.go();">Распределить/Перераспределить</button>
+<div id="result"></div>
+<script>
+  var Root = {
+    membersData: [],
+    totalGames: 0,
+    totalTours:0,
+    gamesPerTour: 0,
+    field: [],
+
+    button: document.getElementById('go'),
+    dataField: document.getElementById('dataField'),
+    result: document.getElementById('result'),
+
+    initData: function(){
+      this.result.innerHTML = '';
+      this.membersData = [];
+      this.totalGames = 0;
+      this.totalTours = 0;
+      this.gamesPerTour = 0;
+
+      var members = this.dataField.value.split("\n");
+
+      var corts = parseInt(members.length / 2);
+
+      for(var i = 0; i < members.length; i++){
+          for(var j = i + 1; j < members.length; j++){
+              if(members[i] != members[j]){
+                  this.totalGames++;
+                  this.membersData.push({
+                    first: members[i],
+                    second: members[j]
+                  });
+              }
+          }
+      }
+      this.totalTours = Math.ceil(this.totalGames / members.length);
+      this.gamesPerTour = this.totalGames / this.totalTours;
+    },
+    initField: function(){
+      this.field = new Array(this.totalTours);
+      for(var tour = 0; tour < this.totalTours; tour++){
+          this.field[tour] = new Array(this.gamesPerTour);
+      }
+      for(var tour = 0; tour < this.totalTours; tour++){
+          for(var game = 0; game < this.gamesPerTour; game++){
+              if(game == 0){
+                this.field[tour][game] = [1, tour + 2];
+              } else {
+                 //fill busy for another games
+                // var gameIndex = game -1;
+                // var busy = [];
+                // for(var game = 0; game < gameIndex; game++){
+                //     for(var i=0;i<this.field[tour][game].length;i++){
+                //         busy.push(this.field[tour][game][i]);
+                //     }
+                // }
+                // console.log(busy);
+
+
+
+              }
+          }
+      }
+    },
+    go: function(){
+        this.initData();
+        //console.log(this.membersData);
+        //console.log(this.totalGames);
+        //console.log(this.totalTours);
+        //console.log(this.gamesPerTour);
+        this.initField();
+
+
+
+    },
+    shuffle: function(array) {
+      array.sort(() => Math.random() - 0.5);
+    },
+    arraysEqual: function(a, b) {
+      if (a === b) return true;
+      if (a == null || b == null) return false;
+      if (a.length !== b.length) return false;
+
+      for (var i = 0; i < a.length; ++i) {
+      if (a[i] !== b[i]) return false;
+      }
+      return true;
+    }
+  };
+</script>
+</body>
+</html>
