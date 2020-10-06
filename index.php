@@ -1,6 +1,7 @@
 <?php
 
-class Gamers {
+class Gamers
+{
     public $gamersCount = 0;
 
     public $couples = 0;
@@ -40,10 +41,11 @@ class Gamers {
 
             }
         }
-        $this->resolve();
+        $table = $this->table;
+        #$this->resolve($table, 0, 0);
     }
 
-    public function resolve($tourIndex, $gameIndex)
+    public function resolve($table, $tourIndex, $gameIndex)
     {
         /*
 
@@ -56,33 +58,84 @@ class Gamers {
             4.2 if not stoped -> select ANOTHER NEXT CELL --> recursion: (1)
         5. stop if last cell has one element.
 
-
-
         */
-        $this->table[$tourIndex][$gameIndex] = [
-            'first' => $this->table[$tourIndex][$gameIndex][0]['first'],
-            'second' => $this->table[$tourIndex][$gameIndex][0]['second']
-        ];
-        $this->putGameInTable($firstindex, $secondIndex);
 
-        for($tour = 0; $tour < count($this->table); $tour++){
-            for($game = 0; $game < count($this->table[0]); $game++){
-                if(count($this->table[$tour][$games]) == 1){ //only one possible game in cell
+        // select first game from variants
+        $firstSelectedIndex = $table[$tourIndex][$gameIndex][0]['first'];
+        $secondSelectedIndex = $table[$tourIndex][$gameIndex][0]['second'];
+        $table[$tourIndex][$gameIndex] = [
+            'first' => $firstSelectedIndex,
+            'second' => $secondSelectedIndex
+        ];
+
+        // putGameInTable (remove this first game from all table)
+        $this->putGameInTable($table, $firstSelectedIndex, $secondSelectedIndex);
+
+        for($tour = 0; $tour < count($table); $tour++){
+            for($game = 0; $game < count($table[0]); $game++){
+                if(count($table[$tour][$game]) == 1){ //only one possible game in cell
                     continue;
                 }
-                if(count($this->table[$tour][$games]) == 0){ // no game to play in this cell - error
-                    return false;
+                if(count($table[$tour][$game]) == 0){ // no game to play in this cell - error
+                    return [
+                        'first' => $firstSelectedIndex,
+                        'second' => $secondSelectedIndex
+                    ];
                 }
             }
         }
-        $this->resolve($tourIndex, ++$gameIndex);
+
+
+        $newTable = $table;
+        $result = $this->resolve($newTable, $tourIndex, $gameIndex);
+        if(isset($result['first'])){
+            if(!$this->next($firstSelectedIndex, $secondSelectedIndex)){
+                return true;//finish
+            }
+            $newIndex = $this->next($firstSelectedIndex, $secondSelectedIndex);
+            $result = $this->resolve($newTable, $newIndex[0], $newIndex[1]);
+
+        }
+
+//        if($this->resolve($newTable, $tourIndex, $gameIndex)){
+//
+//        } else {
+//            $gameIndex++;
+//            if($gameIndex + 1 >= $this->couples){
+//                return false;
+//            }
+//            $this->resolve($newTable, $tourIndex, $gameIndex);
+//        }
 
     }
-    function putGameInTable($first, $second)
+    public function next($tourIndex, $gameIndex)
     {
-        for($tour = 0; $tour < count($this->table); $tour++){
-            for($game = 0; $game < count($this->table[0]); $game++){
-                foreach($this->table[$tour][$games] as &$gameVariant){
+        if($tourIndex >= $this->tourCount){
+            return false;
+        }
+
+        if($gameIndex + 1 == $this->couples){
+            $newTourIndex = ++$tourIndex;
+            $newGameIndex = 0;
+        } else {
+            $newTourIndex = $tourIndex;
+            $newGameIndex = ++$gameIndex;
+        }
+        if($newTourIndex >= $this->tourCount || $newGameIndex >= $this->couples){
+            return false;
+        } else {
+            return [
+                $newTourIndex,
+                $newGameIndex
+            ];
+        }
+    }
+    public function putGameInTable($table, $first, $second)
+    {
+        //remove per tour variants
+        for($tour = 0; $tour < count($table); $tour++){
+            for($game = 0; $game < count($table[0]); $game++){
+                foreach($table[$tour][$game] as &$gameVariant){
                     if($gameVariant['first'] == $first && $gameVariant['second'] == $second){
                         unset($gameVariant);
                     }
@@ -90,7 +143,7 @@ class Gamers {
             }
         }
     }
-    function placeGame($first, $second)
+    public function placeGame($first, $second)
     {
         if($first == $second){
             throw new \Exception('First and second same: ' . $first . ' ' .  $second );
@@ -103,7 +156,7 @@ class Gamers {
         }
         return false;
     }
-    function printTable()
+    public function printTable()
     {
         $html = '<table>';
 
@@ -124,6 +177,5 @@ class Gamers {
     }
 }
 
-$game = new Gamers(5);
-echo $game->printTable();
+$game = new Gamers(6);
 #var_dump($game->games);
