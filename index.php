@@ -8,7 +8,7 @@ class Gamers
     public $tourCount = 0;
     public $games = [];
 
-    Public $table = [];
+    public $table = [];
 
     public function __construct($gamersCount){
         $this->gamersCount = $gamersCount;
@@ -42,7 +42,7 @@ class Gamers
             }
         }
         $table = $this->table;
-        #$this->resolve($table, 0, 0);
+        $this->resolve($table, 0, 0);
     }
 
     public function resolve($table, $tourIndex, $gameIndex)
@@ -68,8 +68,9 @@ class Gamers
             'second' => $secondSelectedIndex
         ];
 
+
         // putGameInTable (remove this first game from all table)
-        $this->putGameInTable($table, $firstSelectedIndex, $secondSelectedIndex);
+        $this->putGameInTable($table, $tourIndex, $gameIndex, $firstSelectedIndex, $secondSelectedIndex);
 
         for($tour = 0; $tour < count($table); $tour++){
             for($game = 0; $game < count($table[0]); $game++){
@@ -84,18 +85,15 @@ class Gamers
                 }
             }
         }
-
-
-        $newTable = $table;
-        $result = $this->resolve($newTable, $tourIndex, $gameIndex);
-        if(isset($result['first'])){
-            if(!$this->next($firstSelectedIndex, $secondSelectedIndex)){
-                return true;//finish
-            }
-            $newIndex = $this->next($firstSelectedIndex, $secondSelectedIndex);
-            $result = $this->resolve($newTable, $newIndex[0], $newIndex[1]);
-
+        $next = $this->next($tourIndex, $gameIndex);
+        if(!$next){
+            return true;//finish recursion
         }
+        $newTable = $table;
+
+
+        $this->resolve($newTable, $next[0], $next[1]);
+
 
 //        if($this->resolve($newTable, $tourIndex, $gameIndex)){
 //
@@ -130,13 +128,19 @@ class Gamers
             ];
         }
     }
-    public function putGameInTable($table, $first, $second)
+    public function putGameInTable(&$table, $tourIndex, $gameIndex, $first, $second)
     {
         //remove per tour variants
         for($tour = 0; $tour < count($table); $tour++){
             for($game = 0; $game < count($table[0]); $game++){
+                if($tour == $tourIndex && $game == $gameIndex){
+                    continue;
+                }
                 foreach($table[$tour][$game] as &$gameVariant){
-                    if($gameVariant['first'] == $first && $gameVariant['second'] == $second){
+                    if(
+                        $gameVariant['first'] == $first &&
+                        $gameVariant['second'] == $second
+                    ){
                         unset($gameVariant);
                     }
                 }
@@ -177,5 +181,9 @@ class Gamers
     }
 }
 
-$game = new Gamers(6);
-#var_dump($game->games);
+$game = new Gamers(4);
+for($tour = 0; $tour < count($game->table); $tour++) {
+    for ($gameIndex = 0; $gameIndex < count($game->table[0]); $gameIndex++) {
+        echo sprintf('%s %s : %s', $tour, $gameIndex, print_r($game->table[$tour][$gameIndex], true));
+    }
+}
