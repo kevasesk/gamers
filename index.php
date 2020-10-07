@@ -47,7 +47,7 @@ class Gamers
             $infStop++;
             echo $infStop .' ';
         }
-        var_dump($this->finalTable);die;//eugenesm
+       echo json_encode($this->finalTable);
     }
     public function fillStartTable()
     {
@@ -209,5 +209,5 @@ class Gamers
     }
 }
 
-$game = new Gamers(10);
+$game = new Gamers(4);
 
