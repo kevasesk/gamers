@@ -4,6 +4,17 @@ function dd($var){
     echo "<pre>";
     var_dump($var);die;
 }
+function shuffle_assoc($my_array)
+{
+    $keys = array_keys($my_array);
+    shuffle($keys);
+    foreach($keys as $key) {
+        $new[$key] = $my_array[$key];
+    }
+    $my_array = $new;
+    return $my_array;
+}
+
 class Gamers
 {
     public $gamersCount = 0;
@@ -28,11 +39,22 @@ class Gamers
             }
         }
         $this->tourCount = ceil(count($this->games) / $this->couples);
+
+        $this->fillStartTable();
+        $infStop = 0;
+        while(!$this->resolve($this->table, 0, 0) && $infStop < 1000){
+            $this->fillStartTable();
+            $infStop++;
+            echo $infStop .' ';
+        }
+        var_dump($this->finalTable);die;//eugenesm
+    }
+    public function fillStartTable()
+    {
         $variants = $this->games;
         foreach ($variants as $key => $var) {
             unset($variants[$key]['used']);
         }
-
         for($tour = 0; $tour < $this->tourCount; $tour++){
             for($game = 0; $game < $this->couples; $game++){
                 if($game == 0 && $this->placeGame($game, $tour+1)){
@@ -41,16 +63,14 @@ class Gamers
                         'second' => $tour+1
                     ];
                 } else {
-                    $this->table[$tour][$game] = $variants;
+                    # $this->table[$tour][$game] = $variants;
+                    $this->table[$tour][$game] = shuffle_assoc($variants);
                 }
-
             }
         }
-        $table = $this->table;
-        $this->resolve($table, 0, 0, 0);
     }
 
-    public function resolve($table, $tourIndex, $gameIndex, $variantIndex)
+    public function resolve($table, $tourIndex, $gameIndex)
     {
         /*
         1. select tour/game cell
@@ -64,17 +84,17 @@ class Gamers
         */
 
         if(
-            !isset(array_values($table[$tourIndex][$gameIndex])[$variantIndex])
+            !isset(array_values($table[$tourIndex][$gameIndex])[0])
         ){
-            echo 'ERROR variant index out of array $tourIndex: ' . $tourIndex . ' $gameIndex: ' . $gameIndex . ' $variantIndex:' . $variantIndex;
+           # echo 'ERROR variant index out of array $tourIndex: ' . $tourIndex . ' $gameIndex: ' . $gameIndex . ' $variantIndex:' . $variantIndex;
             return false;
         }
         // select first game from variants
 
         $oldTable = $table;
 
-        $firstSelectedIndex = array_values($table[$tourIndex][$gameIndex])[$variantIndex]['first'];
-        $secondSelectedIndex = array_values($table[$tourIndex][$gameIndex])[$variantIndex]['second'];
+        $firstSelectedIndex = array_values($table[$tourIndex][$gameIndex])[0]['first'];
+        $secondSelectedIndex = array_values($table[$tourIndex][$gameIndex])[0]['second'];
 
 
         $table[$tourIndex][$gameIndex] = [
@@ -83,7 +103,7 @@ class Gamers
         ];
 
         // putGameInTable (remove this first game from all table)
-        $clearedTable = $this->putGameInTable($table, $tourIndex, $gameIndex, $firstSelectedIndex, $secondSelectedIndex, $variantIndex);
+        $clearedTable = $this->putGameInTable($table, $tourIndex, $gameIndex, $firstSelectedIndex, $secondSelectedIndex);
 
         for($tour = 0; $tour < count($clearedTable); $tour++){
             for($game = 0; $game < count($clearedTable[0]); $game++){
@@ -91,41 +111,22 @@ class Gamers
                     continue;
                 }
                 if(count($clearedTable[$tour][$game]) == 0){ // no game to play in this cell - error
-                    echo sprintf('ERR: firstSelectedIndex: %s, secondSelectedIndex: %s, variantIndex: %s, tour: %s, game: %s',
+                    /*echo sprintf('ERR: firstSelectedIndex: %s, secondSelectedIndex: %s, tour: %s, game: %s',
                          $firstSelectedIndex,
                          $secondSelectedIndex,
-                         $variantIndex,
                          $tour,
                          $game
-                    ). PHP_EOL;
+                    ). PHP_EOL;*/
                     return false;
                 }
             }
         }
-        $variantIndex = 0;
         $next = $this->nextCell($tourIndex, $gameIndex);
         if(!$next){
             $this->finalTable = $clearedTable;
             return true;//finish recursion
         }
-        $k = 0;
-        while($this->resolve($clearedTable, $next[0], $next[1], $variantIndex) === false && $k < 10){
-            $k++;
-            ++$variantIndex;
-            $this->resolve($oldTable, $tourIndex, $gameIndex, $variantIndex);
-            // need recursive go back
-        }
-
-
-//        if($this->resolve($newTable, $tourIndex, $gameIndex)){
-//
-//        } else {
-//            $gameIndex++;
-//            if($gameIndex + 1 >= $this->couples){
-//                return false;
-//            }
-//            $this->resolve($newTable, $tourIndex, $gameIndex);
-//        }
+        return $this->resolve($clearedTable, $next[0], $next[1]);
 
     }
     public function nextCell($tourIndex, $gameIndex)
@@ -150,15 +151,35 @@ class Gamers
             ];
         }
     }
-    public function putGameInTable($table, $tourIndex, $gameIndex, $first, $second, $variantIndex)
+    public function prev($tourIndex, $gameIndex)
     {
-
-        $gamersInTour = [];
-        for($game = 0; $game <= $gameIndex; $game++){//remove variants in tour
-                $gamersInTour[] = $table[$tourIndex][$game]['first'];
-                $gamersInTour[] = $table[$tourIndex][$game]['second'];
+        if($tourIndex < 0){
+            return false;
         }
 
+        if($gameIndex - 1 < 0){
+            $newTourIndex = --$tourIndex;
+            $newGameIndex = $this->couples;
+        } else {
+            $newTourIndex = $tourIndex;
+            $newGameIndex = --$gameIndex;
+        }
+        if($newTourIndex < 0 || $newGameIndex < 0){
+            return false;
+        } else {
+            return [
+                $newTourIndex,
+                $newGameIndex
+            ];
+        }
+    }
+    public function putGameInTable($table, $tourIndex, $gameIndex, $first, $second)
+    {
+        $gamersInTour = [];
+        for($game = 0; $game <= $gameIndex; $game++){//remove variants in tour
+            $gamersInTour[] = $table[$tourIndex][$game]['first'];
+            $gamersInTour[] = $table[$tourIndex][$game]['second'];
+        }
 
         //remove per tour variants
         for($tour = 0; $tour < count($table); $tour++){
@@ -229,11 +250,5 @@ class Gamers
     }
 }
 
-$game = new Gamers(5);
-echo "<pre>";
-for($tour = 0; $tour < count($game->finalTable); $tour++) {
-    for ($gameIndex = 0; $gameIndex < count($game->finalTable[0]); $gameIndex++) {
-        echo sprintf('%s %s : %s', $tour, $gameIndex, print_r($game->finalTable[$tour][$gameIndex], true));
-    }
-    echo PHP_EOL . PHP_EOL . PHP_EOL;
-}
+$game = new Gamers(10);
+
