@@ -63,8 +63,10 @@ class Gamers
         5. stop if last cell has one element.
         */
 
-        if($variantIndex >= $this->couples){
-            echo 'ERROR variant index out of array' . $firstSelectedIndex . ' ' . $secondSelectedIndex . ' ' . $variantIndex;
+        if(
+            !isset(array_values($table[$tourIndex][$gameIndex])[$variantIndex])
+        ){
+            echo 'ERROR variant index out of array $tourIndex: ' . $tourIndex . ' $gameIndex: ' . $gameIndex . ' $variantIndex:' . $variantIndex;
             return false;
         }
         // select first game from variants
@@ -73,6 +75,7 @@ class Gamers
 
         $firstSelectedIndex = array_values($table[$tourIndex][$gameIndex])[$variantIndex]['first'];
         $secondSelectedIndex = array_values($table[$tourIndex][$gameIndex])[$variantIndex]['second'];
+
 
         $table[$tourIndex][$gameIndex] = [
             'first' => $firstSelectedIndex,
@@ -88,7 +91,6 @@ class Gamers
                     continue;
                 }
                 if(count($clearedTable[$tour][$game]) == 0){ // no game to play in this cell - error
-
                     echo sprintf('ERR: firstSelectedIndex: %s, secondSelectedIndex: %s, variantIndex: %s, tour: %s, game: %s',
                          $firstSelectedIndex,
                          $secondSelectedIndex,
@@ -101,17 +103,17 @@ class Gamers
             }
         }
         $variantIndex = 0;
-        $next = $this->next($tourIndex, $gameIndex);
+        $next = $this->nextCell($tourIndex, $gameIndex);
         if(!$next){
             $this->finalTable = $clearedTable;
             return true;//finish recursion
         }
-        if($this->resolve($clearedTable, $next[0], $next[1], $variantIndex) === false){
-            if($variantIndex == 1 ){
-                dd($clearedTable);
-            }
+        $k = 0;
+        while($this->resolve($clearedTable, $next[0], $next[1], $variantIndex) === false && $k < 10){
+            $k++;
             ++$variantIndex;
-            $this->resolve($clearedTable, $next[0], $next[1], $variantIndex);
+            $this->resolve($oldTable, $tourIndex, $gameIndex, $variantIndex);
+            // need recursive go back
         }
 
 
@@ -126,7 +128,7 @@ class Gamers
 //        }
 
     }
-    public function next($tourIndex, $gameIndex)
+    public function nextCell($tourIndex, $gameIndex)
     {
         if($tourIndex >= $this->tourCount){
             return false;
