@@ -151,28 +151,6 @@ class Gamers
             ];
         }
     }
-    public function prev($tourIndex, $gameIndex)
-    {
-        if($tourIndex < 0){
-            return false;
-        }
-
-        if($gameIndex - 1 < 0){
-            $newTourIndex = --$tourIndex;
-            $newGameIndex = $this->couples;
-        } else {
-            $newTourIndex = $tourIndex;
-            $newGameIndex = --$gameIndex;
-        }
-        if($newTourIndex < 0 || $newGameIndex < 0){
-            return false;
-        } else {
-            return [
-                $newTourIndex,
-                $newGameIndex
-            ];
-        }
-    }
     public function putGameInTable($table, $tourIndex, $gameIndex, $first, $second)
     {
         $gamersInTour = [];
@@ -194,7 +172,6 @@ class Gamers
                         $gameVariant['second'] == $second &&
                         $tour != $tourIndex
                     ){
-                        #echo $tour .' '.$game.' was unset' . PHP_EOL;
                         unset($table[$tour][$game][$key]);
                     }
                 }
@@ -211,7 +188,6 @@ class Gamers
                     in_array($table[$tourIndex][$game][$key]['first'], $gamersInTour) ||
                     in_array($table[$tourIndex][$game][$key]['second'], $gamersInTour)
                 ){
-                    #echo $tourIndex .' '.$game.' was unset in tour' . PHP_EOL;
                     unset($table[$tourIndex][$game][$key]);
                 }
             }
@@ -230,23 +206,6 @@ class Gamers
             }
         }
         return false;
-    }
-    public function printTable()
-    {
-        $html = '<table>';
-            for($game = 0; $game < count($this->finalTable[0]); $game++){
-                $html .= '<tr>';
-                for($tour = 0; $tour < count($this->finalTable); $tour++){
-                    $html .= '<td style="border: solid 1px black;">' .
-                    (count($this->finalTable[$tour][$game]) == 1 ?
-                     $this->finalTable[$tour][$game][0]['first'] . ' ' . $this->finalTable[$tour][$game][0]['second'] :
-                      '[]') .
-                     '</td>';
-                }
-                $html .= '</tr>';
-            }
-        $html .= '</table>';
-        return $html;
     }
 }
 
