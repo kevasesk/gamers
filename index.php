@@ -25,6 +25,7 @@ class Gamers
 
     public $table = [];
     public $finalTable = [];
+    public $variants = [];
 
     public function __construct($gamersCount, $inf = 1000){
         $this->gamersCount = $gamersCount;
@@ -40,6 +41,11 @@ class Gamers
         }
         $this->tourCount = ceil(count($this->games) / $this->couples);
 
+        $this->variants = $this->games;
+        foreach ($this->variants as $key => $var) {
+            unset($this->variants[$key]['used']);
+        }
+
         $this->fillStartTable();
         $infStop = 0;
         while(!$this->resolve($this->table, 0, 0) && $infStop < $inf){
@@ -49,15 +55,13 @@ class Gamers
 	        echo $infStop.PHP_EOL;
 	    }
         }
-	
+
        echo PHP_EOL . json_encode($this->finalTable) . PHP_EOL;
     }
     public function fillStartTable()
     {
-        $variants = $this->games;
-        foreach ($variants as $key => $var) {
-            unset($variants[$key]['used']);
-        }
+        $this->table = [];
+
         for($tour = 0; $tour < $this->tourCount; $tour++){
             for($game = 0; $game < $this->couples; $game++){
                 if($game == 0 && $this->placeGame($game, $tour+1)){
@@ -67,7 +71,7 @@ class Gamers
                     ];
                 } else {
                     # $this->table[$tour][$game] = $variants;
-                    $this->table[$tour][$game] = shuffle_assoc($variants);
+                    $this->table[$tour][$game] = shuffle_assoc($this->variants);
                 }
             }
         }
@@ -217,3 +221,4 @@ $game = new Gamers($gamers, $iterations);
 
 // 13?? [[{"first":0,"second":1},{"first":7,"second":11},{"first":3,"second":4},{"first":6,"second":9},{"first":2,"second":8},{"first":5,"second":10}],[{"first":0,"second":2},{"first":1,"second":11},{"first":5,"second":9},{"first":4,"second":10},{"first":6,"second":12},{"first":7,"second":8}],[{"first":0,"second":3},{"first":6,"second":11},{"first":9,"second":10},{"first":2,"second":4},{"first":5,"second":12},{"first":1,"second":8}],[{"first":0,"second":4},{"first":3,"second":9},{"first":8,"second":11},{"first":2,"second":10},{"first":1,"second":12},{"first":6,"second":7}],[{"first":0,"second":5},{"first":9,"second":12},{"first":2,"second":7},{"first":8,"second":10},{"first":1,"second":4},{"first":3,"second":6}],[{"first":0,"second":6},{"first":1,"second":2},{"first":3,"second":8},{"first":10,"second":11},{"first":7,"second":12},{"first":4,"second":5}],[{"first":0,"second":7},{"first":5,"second":6},{"first":3,"second":11},{"first":8,"second":9},{"first":1,"second":10},{"first":4,"second":12}],[{"first":0,"second":8},{"first":9,"second":11},{"first":6,"second":10},{"first":3,"second":5},{"first":4,"second":7},{"first":2,"second":12}],[{"first":0,"second":9},{"first":1,"second":3},{"first":5,"second":7},{"first":4,"second":11},{"first":8,"second":12},{"first":2,"second":6}],[{"first":0,"second":10},{"first":4,"second":8},{"first":3,"second":7},{"first":1,"second":9},{"first":2,"second":5},{"first":11,"second":12}],[{"first":0,"second":11},{"first":4,"second":6},{"first":3,"second":12},{"first":1,"second":5},{"first":2,"second":9},{"first":7,"second":10}],[{"first":0,"second":12},{"first":3,"second":10},{"first":2,"second":11},{"first":7,"second":9},{"first":5,"second":8},{"first":1,"second":6}],[{"first":2,"second":3},{"first":4,"second":9},{"first":5,"second":11},{"first":1,"second":7},{"first":6,"second":8},{"first":10,"second":12}]]
 // 14?? [[{"first":0,"second":1},{"first":4,"second":11},{"first":8,"second":10},{"first":7,"second":12},{"first":2,"second":5},{"first":3,"second":9},{"first":6,"second":13}],[{"first":0,"second":2},{"first":6,"second":9},{"first":1,"second":5},{"first":10,"second":11},{"first":3,"second":4},{"first":7,"second":13},{"first":8,"second":12}],[{"first":0,"second":3},{"first":1,"second":6},{"first":5,"second":9},{"first":4,"second":10},{"first":2,"second":7},{"first":8,"second":13},{"first":11,"second":12}],[{"first":0,"second":4},{"first":1,"second":13},{"first":2,"second":8},{"first":6,"second":11},{"first":3,"second":5},{"first":10,"second":12},{"first":7,"second":9}],[{"first":0,"second":5},{"first":4,"second":7},{"first":1,"second":8},{"first":9,"second":12},{"first":3,"second":6},{"first":2,"second":10},{"first":11,"second":13}],[{"first":0,"second":6},{"first":1,"second":10},{"first":2,"second":3},{"first":7,"second":11},{"first":9,"second":13},{"first":5,"second":12},{"first":4,"second":8}],[{"first":0,"second":7},{"first":5,"second":11},{"first":2,"second":4},{"first":6,"second":8},{"first":12,"second":13},{"first":9,"second":10},{"first":1,"second":3}],[{"first":0,"second":8},{"first":4,"second":13},{"first":1,"second":12},{"first":5,"second":7},{"first":2,"second":6},{"first":3,"second":10},{"first":9,"second":11}],[{"first":0,"second":9},{"first":1,"second":11},{"first":5,"second":10},{"first":3,"second":12},{"first":7,"second":8},{"first":4,"second":6},{"first":2,"second":13}],[{"first":0,"second":10},{"first":4,"second":12},{"first":1,"second":9},{"first":3,"second":8},{"first":2,"second":11},{"first":6,"second":7},{"first":5,"second":13}],[{"first":0,"second":11},{"first":7,"second":10},{"first":4,"second":5},{"first":8,"second":9},{"first":3,"second":13},{"first":6,"second":12},{"first":1,"second":2}],[{"first":0,"second":12},{"first":5,"second":6},{"first":1,"second":4},{"first":8,"second":11},{"first":10,"second":13},{"first":2,"second":9},{"first":3,"second":7}],[{"first":0,"second":13},{"first":1,"second":7},{"first":6,"second":10},{"first":3,"second":11},{"first":4,"second":9},{"first":2,"second":12},{"first":5,"second":8}]]
+// 15?? [[{"first":0,"second":1},{"first":2,"second":7},{"first":6,"second":10},{"first":3,"second":12},{"first":8,"second":14},{"first":4,"second":13},{"first":5,"second":9}],[{"first":0,"second":2},{"first":3,"second":8},{"first":4,"second":12},{"first":1,"second":11},{"first":9,"second":14},{"first":6,"second":13},{"first":7,"second":10}],[{"first":0,"second":3},{"first":2,"second":10},{"first":1,"second":12},{"first":4,"second":5},{"first":6,"second":8},{"first":11,"second":13},{"first":7,"second":9}],[{"first":0,"second":4},{"first":8,"second":13},{"first":5,"second":10},{"first":6,"second":12},{"first":9,"second":11},{"first":7,"second":14},{"first":2,"second":3}],[{"first":0,"second":5},{"first":9,"second":12},{"first":3,"second":10},{"first":1,"second":7},{"first":4,"second":6},{"first":8,"second":11},{"first":2,"second":14}],[{"first":0,"second":6},{"first":1,"second":8},{"first":3,"second":4},{"first":11,"second":14},{"first":12,"second":13},{"first":5,"second":7},{"first":9,"second":10}],[{"first":0,"second":7},{"first":1,"second":5},{"first":2,"second":8},{"first":10,"second":13},{"first":3,"second":11},{"first":4,"second":14},{"first":6,"second":9}],[{"first":0,"second":8},{"first":12,"second":14},{"first":10,"second":11},{"first":4,"second":7},{"first":1,"second":2},{"first":3,"second":13},{"first":5,"second":6}],[{"first":0,"second":9},{"first":1,"second":4},{"first":3,"second":14},{"first":2,"second":11},{"first":8,"second":12},{"first":6,"second":7},{"first":5,"second":13}],[{"first":0,"second":10},{"first":2,"second":13},{"first":3,"second":5},{"first":7,"second":12},{"first":1,"second":14},{"first":4,"second":9},{"first":6,"second":11}],[{"first":0,"second":11},{"first":7,"second":8},{"first":5,"second":14},{"first":1,"second":6},{"first":2,"second":4},{"first":10,"second":12},{"first":9,"second":13}],[{"first":0,"second":12},{"first":4,"second":11},{"first":13,"second":14},{"first":3,"second":7},{"first":1,"second":10},{"first":2,"second":5},{"first":8,"second":9}],[{"first":0,"second":13},{"first":8,"second":10},{"first":6,"second":14},{"first":5,"second":12},{"first":2,"second":9},{"first":1,"second":3},{"first":7,"second":11}],[{"first":0,"second":14},{"first":4,"second":10},{"first":5,"second":8},{"first":1,"second":13},{"first":11,"second":12},{"first":3,"second":9},{"first":2,"second":6}],[{"first":1,"second":9},{"first":7,"second":13},{"first":4,"second":8},{"first":3,"second":6},{"first":2,"second":12},{"first":5,"second":11},{"first":10,"second":14}]]
