@@ -26,7 +26,7 @@ class Gamers
     public $table = [];
     public $finalTable = [];
 
-    public function __construct($gamersCount){
+    public function __construct($gamersCount, $inf = 1000){
         $this->gamersCount = $gamersCount;
         $this->couples = (int)($gamersCount / 2);
         for($i=0;$i<$gamersCount;$i++){
@@ -42,12 +42,15 @@ class Gamers
 
         $this->fillStartTable();
         $infStop = 0;
-        while(!$this->resolve($this->table, 0, 0) && $infStop < 1000){
+        while(!$this->resolve($this->table, 0, 0) && $infStop < $inf){
             $this->fillStartTable();
-            $infStop++;
-            echo $infStop .' ';
+	    $infStop++;
+	    if($infStop % 500 == 0){
+	        echo $infStop.PHP_EOL;
+	    }
         }
-       echo json_encode($this->finalTable);
+	
+       echo PHP_EOL . json_encode($this->finalTable) . PHP_EOL;
     }
     public function fillStartTable()
     {
@@ -86,7 +89,7 @@ class Gamers
         if(
             !isset(array_values($table[$tourIndex][$gameIndex])[0])
         ){
-           # echo 'ERROR variant index out of array $tourIndex: ' . $tourIndex . ' $gameIndex: ' . $gameIndex . ' $variantIndex:' . $variantIndex;
+          #  echo 'ERROR variant index out of array $tourIndex: ' . $tourIndex . ' $gameIndex: ' . $gameIndex . ' $variantIndex:' . $variantIndex;
             return false;
         }
         // select first game from variants
@@ -116,7 +119,7 @@ class Gamers
                          $secondSelectedIndex,
                          $tour,
                          $game
-                    ). PHP_EOL;*/
+		 ). PHP_EOL;*/
                     return false;
                 }
             }
@@ -208,6 +211,8 @@ class Gamers
         return false;
     }
 }
+$gamers = isset($argv[1]) ? $argv[1] : 4;
+$iterations = isset($argv[2]) ? $argv[2] : 100000;
+$game = new Gamers($gamers, $iterations);
 
-$game = new Gamers(4);
-
+// 13?? [[{"first":0,"second":1},{"first":7,"second":11},{"first":3,"second":4},{"first":6,"second":9},{"first":2,"second":8},{"first":5,"second":10}],[{"first":0,"second":2},{"first":1,"second":11},{"first":5,"second":9},{"first":4,"second":10},{"first":6,"second":12},{"first":7,"second":8}],[{"first":0,"second":3},{"first":6,"second":11},{"first":9,"second":10},{"first":2,"second":4},{"first":5,"second":12},{"first":1,"second":8}],[{"first":0,"second":4},{"first":3,"second":9},{"first":8,"second":11},{"first":2,"second":10},{"first":1,"second":12},{"first":6,"second":7}],[{"first":0,"second":5},{"first":9,"second":12},{"first":2,"second":7},{"first":8,"second":10},{"first":1,"second":4},{"first":3,"second":6}],[{"first":0,"second":6},{"first":1,"second":2},{"first":3,"second":8},{"first":10,"second":11},{"first":7,"second":12},{"first":4,"second":5}],[{"first":0,"second":7},{"first":5,"second":6},{"first":3,"second":11},{"first":8,"second":9},{"first":1,"second":10},{"first":4,"second":12}],[{"first":0,"second":8},{"first":9,"second":11},{"first":6,"second":10},{"first":3,"second":5},{"first":4,"second":7},{"first":2,"second":12}],[{"first":0,"second":9},{"first":1,"second":3},{"first":5,"second":7},{"first":4,"second":11},{"first":8,"second":12},{"first":2,"second":6}],[{"first":0,"second":10},{"first":4,"second":8},{"first":3,"second":7},{"first":1,"second":9},{"first":2,"second":5},{"first":11,"second":12}],[{"first":0,"second":11},{"first":4,"second":6},{"first":3,"second":12},{"first":1,"second":5},{"first":2,"second":9},{"first":7,"second":10}],[{"first":0,"second":12},{"first":3,"second":10},{"first":2,"second":11},{"first":7,"second":9},{"first":5,"second":8},{"first":1,"second":6}],[{"first":2,"second":3},{"first":4,"second":9},{"first":5,"second":11},{"first":1,"second":7},{"first":6,"second":8},{"first":10,"second":12}]]
