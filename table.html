@@ -1,32 +1,160 @@
 <html>
 <head>
     <meta charset="UTF-8"/>
+    <style>
+    *{
+        font-size: 20px;
+    }
+    table{
+        width:800px;
+        text-align: center;
+    }
+    .with-border{
+        border-bottom: 1px solid black;
+        width: 100%;
+        padding: 20px;
+    }
+    input[type="checkbox"], input[type="radio"]{
+        width: 40px;
+        height: 40px;
+    }
+    select{
+        width: 80px;
+        height: 40px;
+    }
+    button{
+        width:400px;
+    }
+    </style>
 </head>
 <body>
-<textarea placeholder="Введи участников, каждый новый с новой строки" id="dataField" rows="10"></textarea><br/>
-<button type="button" id="go" onclick="Gamers.fillTable();">Распределить</button>
-<table id="result"></table>
+<textarea placeholder="Введи участников, каждый новый с новой строки" id="dataField" rows="10"></textarea>
+<div style="display:inline-block; vertical-align: top;">
+    <button type="button" onclick="Gamers.init();">Распределить</button>
+</div>
+<div id="result"></div>
+<div id="winers"></div>
 <script>
     var Gamers = {
-
-        button: document.getElementById('go'),
         dataField: document.getElementById('dataField'),
         result: document.getElementById('result'),
+        members: [],
 
-        initData: function () {
-            var members = this.dataField.value.split("\n");
-            var testResult = JSON.parse('[[{"first":0,"second":1},{"first":2,"second":3}],[{"first":0,"second":2},{"first":1,"second":3}],[{"first":0,"second":3},{"first":1,"second":2}]]');
-            //TODO validate for similar
+        totalGamers: 4, //TODO hardcode
 
-            for (var tour = 0; tour < testResult.length; tour++) {
-                for (var game = 0; game < testResult[0].length; game++) {
-                    console.log(testResult[tour][game]);//eugenesm
+        results: {
+            4: '[[{"first":0,"second":1},{"first":2,"second":3}],[{"first":0,"second":2},{"first":1,"second":3}],[{"first":0,"second":3},{"first":1,"second":2}]]',
+        },
+
+        init: function () {
+            Gamers.result.innerHTML = '';
+            this.drawSchedule();
+        },
+
+        drawSchedule: function () {
+            this.members = this.dataField.value.split("\n");
+            if(this.members.length in this.results){
+                var resultsVariant = JSON.parse(this.results[this.members.length]);
+
+                //TODO validate for similar
+                //TODO add 1-15 variants
+                var html = '';
+                var playedGameTemplate = '<td><input type="radio"/></td>';
+                var couple = 0;
+                for (var tour = 0; tour < resultsVariant.length; tour++) {
+                    html += '<table>';
+                    html += '<tr><td class="with-border" colspan="5" >Тур ' + (tour + 1) + '</td></tr>';
+                    for (var game = 0; game < resultsVariant[0].length; game++) {
+                        html += '<tr><td class="with-border">' + this.members[resultsVariant[tour][game]['first']] + '</td>' +
+                            Gamers.getGameTemplate(couple, resultsVariant[tour][game]['first']) +
+                            Gamers.getScoreTemplate(couple) +
+                            Gamers.getLockTemplate(couple) +
+                        '</tr>';
+                        html += '<tr><td class="with-border">' + this.members[resultsVariant[tour][game]['second']] + '</td>' +
+                            Gamers.getGameTemplate(couple, resultsVariant[tour][game]['second']) +
+                        '</tr>';
+                        if(game < resultsVariant.length - 2){
+                            html += '<tr><td>  </td></tr>';
+                        }
+                        couple++;
+                    }
+
+                    html += '</table><br/><br/>';
                 }
+                Gamers.result.innerHTML = html;
+            }else{
+                Gamers.result.innerHTML = 'Ну Женщина, незя на столько людей :(';
             }
         },
-        fillTable: function () {
-            this.initData();
+        drawWinners: function(){
+            var winersElement = document.getElementById('winers');
+            winersElement.innerHTML = '';
+            var winners = [];
+            for(var i=0; i < Gamers.totalGamers; i++){
+                var totalGamerWins = 0;
+                var gamerRadios = document.querySelectorAll('[data-gamer="'+i+'"]');
+                gamerRadios.forEach((element) => {
+                    if(element.checked){
+                        totalGamerWins++;
+                    }
+                });
+                winners.push({
+                    gamer: i,
+                    score: totalGamerWins
+                });
+            }
+            winners.sort((a, b) => (a.score < b.score) ? 1 : -1);
 
+            var html ='<table>';
+            var place = 1;
+            html += '<tr>';
+                html += '<th class="with-border">Место</th>';
+                html += '<th class="with-border">Имя</th>';
+                html += '<th class="with-border">Победы</th>';
+            html += '</tr>';
+            winners.forEach((gamerObject) => {
+                html += '<tr>';
+                    html += '<td class="with-border">'+place+'</td>';
+                    html += '<td class="with-border">'+this.members[gamerObject.gamer]+'</td>';
+                    html += '<td class="with-border">'+gamerObject.score+'</td>';
+                html += '</tr>';
+                place++;
+            });
+            html += '</table>';
+            winersElement.innerHTML = html;
+        },
+        getGameTemplate: function(couple, gamer){
+            return '<td class="with-border">'+
+                '<input type="radio" name="couple_'+couple+'" data-gamer="'+gamer+'" onclick="Gamers.handleGame();"/>'+
+            '</td>';
+        },
+        getScoreTemplate: function(couple){
+            var select = '<select name="couple_'+couple+'">';
+            for(var i=0;i<=30;i++){
+                select += '<option>'+i+'</option>';
+            }
+            select += '</select>';
+            return '<td colspan="2" class="with-border">'+select+'</td>';
+        },
+        getLockTemplate: function(couple){
+            return '<td colspan="2" class="with-border">'+
+                '<input type="checkbox" class="lock" data-couple='+couple+' onchange="Gamers.handleLock(this,'+couple+')"/>'+
+            '</td>';
+        },
+        handleGame: function(){
+            this.drawWinners();
+        },
+        handleLock: function(elem, couple){
+            var fieldsToLock = document.querySelectorAll('[name="couple_'+couple+'"]');
+            if(elem.checked){
+                fieldsToLock.forEach((element) => {
+                    element.disabled = true;
+                });
+            } else {
+                fieldsToLock.forEach((element) => {
+                    element.disabled = false;
+                });
+            }
         },
     };
 </script>
