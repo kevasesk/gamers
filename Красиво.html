@@ -9,17 +9,13 @@
         width:600px;
         text-align: center;
     }
-    .with-border{
-        border-bottom: 1px solid black;
-        width: 100%;
-        padding: 20px;
+    td{
+        width:50px;
+        height:50px;
+        border:1px solid black;
     }
     input[type="checkbox"], input[type="radio"]{
         width: 40px;
-        height: 40px;
-    }
-    select{
-        width: 80px;
         height: 40px;
     }
     button{
@@ -40,8 +36,8 @@
         dataField: document.getElementById('dataField'),
         result: document.getElementById('result'),
         members: [],
-
         totalGamers: null,
+        resultsVariant: null,
 
         results: {
             2: '[[{"first":0,"second":1}]]',
@@ -66,29 +62,37 @@
         },
 
         drawSchedule: function () {
-            this.members = this.dataField.value.split("\n");
-            this.totalGamers = this.members.length;
+            this.members = ['1111111 11111111111','22222 222222','3333 333333333'];//TODO !!!!!!!!!!!! this.dataField.value.split("\n");
+            this.totalGamers = 3;//TODO !!!!!!!!!!!!!! this.members.length;
             if(this.members.length in this.results){
-                var resultsVariant = JSON.parse(this.results[this.members.length]);
+                this.resultsVariant = JSON.parse(this.results[this.members.length]);
 
                 //TODO validate for similar
-                //TODO add 1-15 variants
+                //TODO add similar check for score
                 var html = '';
                 var playedGameTemplate = '<td><input type="radio"/></td>';
                 var couple = 0;
-                for (var tour = 0; tour < resultsVariant.length; tour++) {
+                for (var tour = 0; tour < this.resultsVariant.length; tour++) {
                     html += '<table>';
-                    html += '<tr><td class="with-border" colspan="5" >Тур ' + (tour + 1) + '</td></tr>';
-                    for (var game = 0; game < resultsVariant[0].length; game++) {
-                        html += '<tr><td class="with-border">' + this.members[resultsVariant[tour][game]['first']] + '</td>' +
-                            Gamers.getGameTemplate(couple, resultsVariant[tour][game]['first']) +
-                            Gamers.getScoreTemplate(couple) +
+                    html += '<tr><td colspan="5">Тур ' + (tour + 1) + '</tr>';
+                    for (var game = 0; game < this.resultsVariant[0].length; game++) {
+                        html +='<tr><td></td>' +
+                            Gamers.getScoreTemplate(couple, 1) +
+                            Gamers.getScoreTemplate(couple, 2) +
+                            Gamers.getScoreTemplate(couple, 3) +
+                        '</tr>';
+                        html += '<tr><td class="with-border">' + this.members[this.resultsVariant[tour][game]['first']] + '</td>' +
+                            Gamers.getGameTemplate(couple, this.resultsVariant[tour][game]['first'], 1, tour) +
+                            Gamers.getGameTemplate(couple, this.resultsVariant[tour][game]['first'], 2, tour) +
+                            Gamers.getGameTemplate(couple, this.resultsVariant[tour][game]['first'], 3, tour) +
                             Gamers.getLockTemplate(couple) +
                         '</tr>';
-                        html += '<tr><td class="with-border">' + this.members[resultsVariant[tour][game]['second']] + '</td>' +
-                            Gamers.getGameTemplate(couple, resultsVariant[tour][game]['second']) +
+                        html += '<tr><td class="with-border">' + this.members[this.resultsVariant[tour][game]['second']] + '</td>' +
+                            Gamers.getGameTemplate(couple, this.resultsVariant[tour][game]['second'], 1, tour) +
+                            Gamers.getGameTemplate(couple, this.resultsVariant[tour][game]['second'], 2, tour) +
+                            Gamers.getGameTemplate(couple, this. resultsVariant[tour][game]['second'], 3, tour) +
                         '</tr>';
-                        if(game < resultsVariant.length - 2){
+                        if(game < this.resultsVariant.length - 2){
                             html += '<tr><td>  </td></tr>';
                         }
                         couple++;
@@ -105,16 +109,23 @@
             var winersElement = document.getElementById('winers');
             winersElement.innerHTML = '';
             var winners = [];
-            for(var i=0; i < Gamers.totalGamers; i++){
+            for(var gamerIndex = 0; gamerIndex < Gamers.totalGamers; gamerIndex++){
                 var totalGamerWins = 0;
-                var gamerRadios = document.querySelectorAll('[data-gamer="'+i+'"]');
-                gamerRadios.forEach((element) => {
-                    if(element.checked){
+                for (var tour = 0; tour < this.resultsVariant.length; tour++) {
+                    var tourGamerWins = 0;
+                    var gamerRadios = document.querySelectorAll('[data-tour="'+tour+'"][data-gamer="'+gamerIndex+'"]');
+                    gamerRadios.forEach((element) => {
+                        if(element.checked){
+                            tourGamerWins++;
+                        }
+                    });
+                    if(tourGamerWins >= 2){
                         totalGamerWins++;
                     }
-                });
+                }
+
                 winners.push({
-                    gamer: i,
+                    gamer: gamerIndex,
                     score: totalGamerWins
                 });
             }
@@ -138,21 +149,21 @@
             html += '</table>';
             winersElement.innerHTML = html;
         },
-        getGameTemplate: function(couple, gamer){
+        getGameTemplate: function(couple, gamer, game, tour){
             return '<td class="with-border">'+
-                '<input type="radio" name="couple_'+couple+'" data-gamer="'+gamer+'" onclick="Gamers.handleGame();"/>'+
+                '<input type="radio" name="couple_'+couple+'_'+game+'" data-tour="'+tour+'" data-gamer="'+gamer+'" onclick="Gamers.handleGame();"/>'+
             '</td>';
         },
-        getScoreTemplate: function(couple){
-            var select = '<select name="couple_'+couple+'">';
+        getScoreTemplate: function(couple, game){
+            var select = '<select name="couple_'+couple+'_'+game+'">';
             for(var i=0;i<=30;i++){
                 select += '<option>'+i+'</option>';
             }
             select += '</select>';
-            return '<td colspan="2" class="with-border">'+select+'</td>';
+            return '<td class="with-border">'+select+'</td>';
         },
         getLockTemplate: function(couple){
-            return '<td colspan="2" class="with-border">'+
+            return '<td class="with-border">'+
                 '<input type="checkbox" class="lock" data-couple='+couple+' onchange="Gamers.handleLock(this,'+couple+')"/>'+
             '</td>';
         },
@@ -172,6 +183,7 @@
             }
         },
     };
+    Gamers.init();
 </script>
 </body>
 </html>
