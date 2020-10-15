@@ -1,0 +1,27 @@
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <link rel="stylesheet" href="bootstrap.css"/>
+    <link rel="stylesheet" href="app.css"/>
+    <title>Красиво</title>
+</head>
+<body>
+    <div class="container">
+        <textarea placeholder="Введи участников, каждый новый с новой строки" id="dataField" rows="15"></textarea>
+        <textarea id="debug" rows="10"></textarea>
+        <div class="input-group">
+          <select class="custom-select" onchange="Gamers.handleTypeChange(this);" data-type>
+              <option value="games" selected>По играм</option>
+              <option value="scores">По очкам</option>
+          </select>
+        </div>
+        <button class="btn btn-light" type="button" onclick="Gamers.init();">Распределить</button>
+        <button class="btn btn-light" type="button" onclick="Gamers.load();">Загрузить</button>
+        <button class="btn btn-light" type="button" onclick="Gamers.save();">Сохранить</button>
+        <div id="result"></div>
+        <div id="winers"></div>
+    </div>
+    <script src="jquery-3.5.1.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
