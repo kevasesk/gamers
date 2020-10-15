@@ -63,10 +63,26 @@
                         2: 15 //game : score
                     }
                 },
+                games:{
+                    0:{//couple
+                        1:{//gamer
+                            0:true,//game: win
+                            1:true,//game: win
+                            2:false,//game: lost
+                        },
+                        2:{
+                            0:false,//game: win
+                            1:false,//game: win
+                            2:true,//game: lost
+                        }
+
+                    }
+                }
             };
 
             //fill gamers
             Gamers.dataField.innerHTML = this.data.members.join('\n');
+            //render schedule for getting elements to fill
             this.drawSchedule();
 
             //fill locks
@@ -84,6 +100,9 @@
                      }
                 }
             }
+
+            //fill gamers
+            //data-couple="'+couple+'" data-tour="'+tour+'" data-gamer="'+gamer+'"
 
         },
         drawSchedule: function () {
