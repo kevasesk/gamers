@@ -65,15 +65,15 @@
                 },
                 games:{
                     0:{//couple
-                        1:{//gamer
-                            0:true,//game: win
+                        0:{//gamer
                             1:true,//game: win
-                            2:false,//game: lost
+                            2:true,//game: win
+                            3:true,//game: lost
                         },
-                        2:{
-                            0:false,//game: win
+                        1:{
                             1:false,//game: win
-                            2:true,//game: lost
+                            2:false,//game: win
+                            3:false,//game: lost
                         }
 
                     }
@@ -101,8 +101,21 @@
                 }
             }
 
-            //fill gamers
+            //fill games
             //data-couple="'+couple+'" data-tour="'+tour+'" data-gamer="'+gamer+'"
+            for (var couple in this.data.games) {
+                    if(this.data.games[couple] !== undefined){
+                         for (var gamer in this.data.games[couple]) {
+                               if(this.data.games[couple][gamer] !== undefined){
+                                    for (var game in this.data.games[couple][gamer]) {
+                                           if(this.data.games[couple][gamer][game] !== undefined && this.data.games[couple][gamer][game]){
+                                                $("[data-couple='"+couple+"'][data-gamer='"+gamer+"'][data-game='"+game+"']").trigger('click');
+                                           }
+                                     }
+                               }
+                         }
+                    }
+                }
 
         },
         drawSchedule: function () {
@@ -234,7 +247,7 @@
         },
         getGameTemplate: function(couple, gamer, game, tour){
             return '<td class="with-border">'+
-                '<input type="radio" name="couple_'+couple+'_'+game+'" data-couple="'+couple+'" data-tour="'+tour+'" data-gamer="'+gamer+'" onclick="Gamers.drawWinners();"/>'+
+                '<input type="radio" name="couple_'+couple+'_'+game+'" data-couple="'+couple+'" data-tour="'+tour+'" data-gamer="'+gamer+'" data-game="'+game+'" onclick="Gamers.drawWinners();"/>'+
             '</td>';
         },
         getScoreTemplate: function(couple, game, gamer){
