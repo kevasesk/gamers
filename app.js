@@ -68,12 +68,56 @@
             //collect scores
 
 
-
-            for (var tour = 0; tour < this.resultsVariant.length; tour++) {
-                for (var game = 0; game < this.resultsVariant[0].length; game++) {
-
+            // scores:{
+            //     0:{
+            //         1:2,
+            //         2:15,
+            //         3:22
+            //     },
+            //     4:{//couple
+            //         2: 15 //game : score
+            //     }
+            // },
+            $('[data-score] option:selected').each(function(index){
+                //  data-couple="'+couple+'" data-game="'+game+'" data-gamer="'+gamer+'" data-score
+                if(self.data.scores === undefined){
+                    self.data.scores = [];
                 }
-            }
+                self.data.scores[
+                    $(this).closest('select').data('couple')
+                ] = {};
+                self.data.scores[
+                    $(this).closest('select').data('couple')
+                ][
+                    $(this).closest('select').data('game')
+                ] = $(this).val();
+            });
+
+            // for (var couple in this.data.scores) {
+            //     if(this.data.scores[couple] !== undefined){
+            //          for (var game in this.data.scores[couple]) {
+            //                if(this.data.scores[couple][game] !== undefined){
+            //                     $('[name="couple_'+couple+'_'+game+'"] option[value='+this.data.scores[couple][game]+']').prop('selected', true);
+            //                }
+            //          }
+            //     }
+            // }
+
+            //collect games
+            $('[data-game-persistent]').each(function(index){
+                //  <input type="radio" name="couple_'+couple+'_'+game+'" data-couple="'+couple+'" data-tour="'+tour+'" data-gamer="'+gamer+'" data-game="'+game+'" data-game-persistent
+                if(self.data.scores === undefined){
+                    self.data.scores = [];
+                }
+                self.data.scores[
+                    $(this).closest('select').data('couple')
+                ] = {};
+                self.data.scores[
+                    $(this).closest('select').data('couple')
+                ][
+                    $(this).closest('select').data('game')
+                ] = $(this).val();
+            });
 
         },
         fillData: function(){
@@ -290,7 +334,7 @@
         },
         getGameTemplate: function(couple, gamer, game, tour){
             return '<td class="with-border">'+
-                '<input type="radio" name="couple_'+couple+'_'+game+'" data-couple="'+couple+'" data-tour="'+tour+'" data-gamer="'+gamer+'" data-game="'+game+'" onclick="Gamers.drawWinners();"/>'+
+                '<input type="radio" name="couple_'+couple+'_'+game+'" data-couple="'+couple+'" data-tour="'+tour+'" data-gamer="'+gamer+'" data-game="'+game+'" onclick="Gamers.drawWinners();" data-game-persistent />'+
             '</td>';
         },
         getScoreTemplate: function(couple, game, gamer){
