@@ -1,4 +1,9 @@
     window.type = 'games';
+    var Helper = {
+        onlyUnique: function(value, index, self) {
+          return self.indexOf(value) === index;
+        }
+    };
     var Gamers = {
         dataField: document.getElementById('dataField'),
         debug: document.getElementById('debug'),
@@ -42,6 +47,28 @@
             //Android.save(JSON.stringify(this.data)); TODO REMOVE
         },
         collectData: function (){
+            //collect gamers
+            this.data.members = this.dataField.value.split("\n");
+
+            //collect type
+            this.data.type = window.type;
+
+            //collect locks
+            var self = this;
+            $('[data-couple-lock]').each(function(index){
+                if($(this).prop('checked')){
+                    if(self.data.locked === undefined){
+                        self.data.locked = [];
+                    }
+                    self.data.locked.push($(this).data('couple-lock'));
+                }
+            });
+            this.data.locked = this.data.locked.filter(Helper.onlyUnique);
+
+            //collect scores
+
+
+
             for (var tour = 0; tour < this.resultsVariant.length; tour++) {
                 for (var game = 0; game < this.resultsVariant[0].length; game++) {
 
@@ -52,7 +79,8 @@
         fillData: function(){
             this.data = {
                 members: ['11','22','33','44'],
-                locked:[],
+                type: 'games', //  scores
+                locked:[2,4],
                 scores:{
                     0:{
                         1:2,
@@ -75,13 +103,28 @@
                             2:false,//game: win
                             3:false,//game: lost
                         }
-
-                    }
+                    },
+                    1:{//couple
+                        2:{//gamer
+                            1:true,//game: win
+                            2:true,//game: win
+                            3:true,//game: lost
+                        },
+                        3:{
+                            1:false,//game: win
+                            2:false,//game: win
+                            3:false,//game: lost
+                        }
+                    },
                 }
             };
 
             //fill gamers
             Gamers.dataField.innerHTML = this.data.members.join('\n');
+
+            //fill type
+            window.type = this.data.type;
+
             //render schedule for getting elements to fill
             this.drawSchedule();
 
