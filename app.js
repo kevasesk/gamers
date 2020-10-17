@@ -47,6 +47,7 @@
             //Android.save(JSON.stringify(this.data)); TODO REMOVE
         },
         collectData: function (){
+            this.data = {};//TODO clear data
             //collect gamers
             this.data.members = this.dataField.value.split("\n");
 
@@ -66,57 +67,37 @@
             this.data.locked = this.data.locked.filter(Helper.onlyUnique);
 
             //collect scores
-
-
-            // scores:{
-            //     0:{
-            //         1:2,
-            //         2:15,
-            //         3:22
-            //     },
-            //     4:{//couple
-            //         2: 15 //game : score
-            //     }
-            // },
             $('[data-score] option:selected').each(function(index){
                 //  data-couple="'+couple+'" data-game="'+game+'" data-gamer="'+gamer+'" data-score
                 if(self.data.scores === undefined){
                     self.data.scores = [];
                 }
-                self.data.scores[
-                    $(this).closest('select').data('couple')
-                ] = {};
-                self.data.scores[
-                    $(this).closest('select').data('couple')
-                ][
-                    $(this).closest('select').data('game')
-                ] = $(this).val();
+                var couple = $(this).closest('select').data('couple');
+                if(couple !== undefined && !self.data.scores[couple]){
+                     self.data.scores[couple] = {};
+                }
+                self.data.scores[couple][$(this).closest('select').data('game')] = $(this).val();
             });
-
-            // for (var couple in this.data.scores) {
-            //     if(this.data.scores[couple] !== undefined){
-            //          for (var game in this.data.scores[couple]) {
-            //                if(this.data.scores[couple][game] !== undefined){
-            //                     $('[name="couple_'+couple+'_'+game+'"] option[value='+this.data.scores[couple][game]+']').prop('selected', true);
-            //                }
-            //          }
-            //     }
-            // }
 
             //collect games
             $('[data-game-persistent]').each(function(index){
                 //  <input type="radio" name="couple_'+couple+'_'+game+'" data-couple="'+couple+'" data-tour="'+tour+'" data-gamer="'+gamer+'" data-game="'+game+'" data-game-persistent
-                if(self.data.scores === undefined){
-                    self.data.scores = [];
+                if(self.data.games === undefined){
+                    self.data.games = [];
                 }
-                self.data.scores[
-                    $(this).closest('select').data('couple')
-                ] = {};
-                self.data.scores[
-                    $(this).closest('select').data('couple')
-                ][
-                    $(this).closest('select').data('game')
-                ] = $(this).val();
+
+                var couple = $(this).data('couple');
+                if(!self.data.games[couple]){
+                     self.data.games[couple] = {};
+                }
+
+                var gamer = $(this).data('gamer');
+                if(!self.data.games[couple][gamer]){
+                     self.data.games[couple][gamer] = {};
+                }
+
+                var game = $(this).data('game');
+                self.data.games[couple][gamer][game] = $(this).prop('checked');
             });
 
         },
