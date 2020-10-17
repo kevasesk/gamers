@@ -37,17 +37,15 @@
             this.drawSchedule();
         },
         load: function(){
-//            var data = Android.load(); TODO REMOVE
-//            this.data = JSON.parse(data);
-//            this.debug.innerHTML = data;
+            this.data = JSON.parse(Android.load());
             this.fillData();
         },
         save: function(){
             this.collectData();
-            //Android.save(JSON.stringify(this.data)); TODO REMOVE
+            Android.save(JSON.stringify(this.data));
         },
+        //data working
         collectData: function (){
-            this.data = {};//TODO clear data
             //collect gamers
             this.data.members = this.dataField.value.split("\n");
 
@@ -126,55 +124,6 @@
 
         },
         fillData: function(){
-            this.data = {
-                members: ['11','22','33','44'],
-                type: 'scores', //  games
-                locked:[1,2],
-                scores:{
-                    0:{
-                        1:2,
-                        2:15,
-                        3:22
-                    },
-                    4:{//couple
-                        2: 15 //game : score
-                    }
-                },
-                scoresByScores:{
-                     1:{//couple
-                        1: {//game
-                            2: -10, //gamer : score
-                            3: 15
-                        }
-                    }
-                },
-                games:{
-                    0:{//couple
-                        0:{//gamer
-                            1:false,//game: win
-                            2:true,//game: win
-                            3:true,//game: lost
-                        },
-                        1:{
-                            1:true,//game: win
-                            2:false,//game: win
-                            3:false,//game: lost
-                        }
-                    },
-                    1:{//couple
-                        2:{//gamer
-                            1:true,//game: win
-                            2:true,//game: win
-                            3:true,//game: lost
-                        },
-                        3:{
-                            1:false,//game: win
-                            2:false,//game: win
-                            3:false,//game: lost
-                        }
-                    },
-                }
-            };
 
             //fill gamers (games/score)
             Gamers.dataField.innerHTML = this.data.members.join('\n');
@@ -233,7 +182,9 @@
                     }
                 }
             }
+            this.drawWinners();
         },
+
         drawSchedule: function () {
             this.members = this.dataField.value.split("\n");
             this.data.members = this.members;//set data
@@ -361,6 +312,8 @@
             html += '</table>';
             winersElement.innerHTML = html;
         },
+
+        //templates
         getGameTemplate: function(couple, gamer, game, tour){
             return '<td class="with-border">'+
                 '<input type="radio" name="couple_'+couple+'_'+game+'" data-couple="'+couple+'" data-tour="'+tour+'" data-gamer="'+gamer+'" data-game="'+game+'" onclick="Gamers.drawWinners();" data-game-persistent />'+
@@ -393,6 +346,8 @@
                 '<input type="checkbox" class="lock" data-couple-lock='+couple+' onchange="Gamers.handleLock(this,'+couple+')"/>'+
             '</td>';
         },
+
+        //handles
         handleLock: function(elem, couple, game){
             var fieldsToLock = document.querySelectorAll('[data-couple="'+couple+'"]');
             if(elem.checked){
