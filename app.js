@@ -64,20 +64,44 @@
                     self.data.locked.push($(this).data('couple-lock'));
                 }
             });
-            this.data.locked = this.data.locked.filter(Helper.onlyUnique);
+            if(this.data.locked){
+                this.data.locked = this.data.locked.filter(Helper.onlyUnique);
+            }
 
             //collect scores
-            $('[data-score] option:selected').each(function(index){
-                //  data-couple="'+couple+'" data-game="'+game+'" data-gamer="'+gamer+'" data-score
-                if(self.data.scores === undefined){
-                    self.data.scores = [];
-                }
-                var couple = $(this).closest('select').data('couple');
-                if(couple !== undefined && !self.data.scores[couple]){
-                     self.data.scores[couple] = {};
-                }
-                self.data.scores[couple][$(this).closest('select').data('game')] = $(this).val();
-            });
+            if(this.data.type == 'games'){
+               $('[data-score] option:selected').each(function(index){
+                    //  data-couple="'+couple+'" data-game="'+game+'" data-gamer="'+gamer+'" data-score
+                    if(self.data.scores === undefined){
+                        self.data.scores = [];
+                    }
+                    var couple = $(this).closest('select').data('couple');
+                    if(couple !== undefined && !self.data.scores[couple]){
+                         self.data.scores[couple] = {};
+                    }
+                    self.data.scores[couple][$(this).closest('select').data('game')] = $(this).val();
+                });
+            } else {
+                $('[data-score] option:selected').each(function(index){
+                    //  data-couple="'+couple+'" data-game="'+game+'" data-gamer="'+gamer+'" data-score
+                    if(self.data.scoresByScores === undefined){
+                        self.data.scoresByScores = [];
+                    }
+
+                    var couple = $(this).closest('select').data('couple');
+                    if(couple !== undefined && !self.data.scoresByScores[couple]){
+                         self.data.scoresByScores[couple] = {};
+                    }
+
+                    var game = $(this).closest('select').data('game');
+                    if(game !== undefined && !self.data.scoresByScores[couple][game]){
+                         self.data.scoresByScores[couple][game] = {};
+                    }
+
+                    var gamer = $(this).closest('select').data('gamer');
+                    self.data.scoresByScores[couple][game][gamer] = $(this).val();
+                });
+            }
 
             //collect games
             $('[data-game-persistent]').each(function(index){
@@ -104,8 +128,8 @@
         fillData: function(){
             this.data = {
                 members: ['11','22','33','44'],
-                type: 'games', //  scores
-                locked:[2,4],
+                type: 'scores', //  games
+                locked:[1,2],
                 scores:{
                     0:{
                         1:2,
@@ -116,15 +140,23 @@
                         2: 15 //game : score
                     }
                 },
+                scoresByScores:{
+                     1:{//couple
+                        1: {//game
+                            2: -10, //gamer : score
+                            3: 15
+                        }
+                    }
+                },
                 games:{
                     0:{//couple
                         0:{//gamer
-                            1:true,//game: win
+                            1:false,//game: win
                             2:true,//game: win
                             3:true,//game: lost
                         },
                         1:{
-                            1:false,//game: win
+                            1:true,//game: win
                             2:false,//game: win
                             3:false,//game: lost
                         }
@@ -144,47 +176,63 @@
                 }
             };
 
-            //fill gamers
+            //fill gamers (games/score)
             Gamers.dataField.innerHTML = this.data.members.join('\n');
 
-            //fill type
+            //fill type (games/score)
             window.type = this.data.type;
 
             //render schedule for getting elements to fill
             this.drawSchedule();
 
-            //fill locks
-            for (var lockIndex = 0; lockIndex < this.data.locked.length; lockIndex++) {
-                $('[data-couple-lock="'+lockIndex+'"]').trigger('click');
-            }
-
-            //fill scores for games type
-            for (var couple in this.data.scores) {
-                if(this.data.scores[couple] !== undefined){
-                     for (var game in this.data.scores[couple]) {
-                           if(this.data.scores[couple][game] !== undefined){
-                                $('[name="couple_'+couple+'_'+game+'"] option[value='+this.data.scores[couple][game]+']').prop('selected', true);
-                           }
-                     }
+            //fill locks (games/score)
+            if(this.data.locked){
+                for (var lockIndex = 0; lockIndex < this.data.locked.length; lockIndex++) {
+                    $('[data-couple-lock="'+this.data.locked[lockIndex]+'"]').trigger('click');
                 }
             }
 
-            //fill games
-            //data-couple="'+couple+'" data-tour="'+tour+'" data-gamer="'+gamer+'"
-            for (var couple in this.data.games) {
-                    if(this.data.games[couple] !== undefined){
-                         for (var gamer in this.data.games[couple]) {
-                               if(this.data.games[couple][gamer] !== undefined){
-                                    for (var game in this.data.games[couple][gamer]) {
-                                           if(this.data.games[couple][gamer][game] !== undefined && this.data.games[couple][gamer][game]){
-                                                $("[data-couple='"+couple+"'][data-gamer='"+gamer+"'][data-game='"+game+"']").trigger('click');
+            //fill scores (games/score)
+            if(this.data.type == 'games'){ // for games type
+               for (var couple in this.data.scores) {
+                    if(this.data.scores[couple] !== undefined){
+                         for (var game in this.data.scores[couple]) {
+                               if(this.data.scores[couple][game] !== undefined){
+                                    $('[name="couple_'+couple+'_'+game+'"] option[value='+this.data.scores[couple][game]+']').prop('selected', true);
+                               }
+                         }
+                    }
+                }
+            } else {// for scores type
+                for (var couple in this.data.scoresByScores) {
+                    if(this.data.scoresByScores[couple] !== undefined){
+                         for (var game in this.data.scoresByScores[couple]) {
+                               if(this.data.scoresByScores[couple][game] !== undefined){
+                                    for (var gamer in this.data.scoresByScores[couple][game]) {
+                                           if(this.data.scoresByScores[couple][game][gamer] !== undefined){
+                                                $('select[data-couple="'+couple+'"][data-game="'+game+'"][data-gamer="'+gamer+'"] option[value="'+this.data.scoresByScores[couple][game][gamer]+'"]').prop('selected', true);
                                            }
                                      }
                                }
                          }
                     }
                 }
+            }
 
+            //fill games (games/score)
+            for (var couple in this.data.games) {
+                if(this.data.games[couple] !== undefined){
+                    for (var gamer in this.data.games[couple]) {
+                        if(this.data.games[couple][gamer] !== undefined){
+                             for (var game in this.data.games[couple][gamer]) {
+                                    if(this.data.games[couple][gamer][game] !== undefined && this.data.games[couple][gamer][game]){
+                                         $("[data-couple='"+couple+"'][data-gamer='"+gamer+"'][data-game='"+game+"']").trigger('click');
+                                    }
+                              }
+                        }
+                    }
+                }
+            }
         },
         drawSchedule: function () {
             this.members = this.dataField.value.split("\n");
